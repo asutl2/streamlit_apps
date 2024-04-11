@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import linear_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from xgboost import XGBRegressor, XGBClassifier  # XGBoostのライブラリをインポート
+from xgboost import XGBClassifier, XGBRegressor  # XGBoostのライブラリをインポート
 
 #タイトル
 st.title("機械学習アプリ")
@@ -126,42 +126,54 @@ if uploaded_files:
                  col1.metric(label="トレーニングスコア", value=lr.score(X_train, y_train))
                  col2.metric(label="テストスコア", value=lr.score(X_test, y_test))
 
-    # XGBRegressorを選択した場合
+
+
    elif ml_menu == "XGBRegressor":
         st.markdown("#### XGBRegressorを実行します")
         execute = st.button("実行")
     
-        xgb_reg = XGBRegressor()  # XGBRegressorのインスタンスを作成
+        # XGBRegressorのインスタンスを作成
+        xgb_reg = XGBRegressor(max_depth=3, eta=0.1, objective='reg:squarederror', eval_metric='logloss', use_label_encoder=False)
     
         # 実行ボタンを押したら下記が進む
         if execute:
+            # 説明変数と目的変数のDataFrameを用意
             df_ex = df[ex]
             df_ob = df[ob]
+
+            df_ex = pd.get_dummies(df_ex)
+        
+            # データを訓練セットとテストセットに分割
             X_train, X_test, y_train, y_test = train_test_split(df_ex, df_ob, test_size=0.3)
+
+            # モデルの訓練
             xgb_reg.fit(X_train, y_train)
+        
             # プログレスバー（ここでは、やってる感だけ）
             my_bar = st.progress(0)
-        
             for percent_complete in range(100):
                 time.sleep(0.02)
                 my_bar.progress(percent_complete + 1)
         
-            # metricsで指標を強調表示させる
+                # 訓練完了後のスコア表示
             col1, col2 = st.columns(2)
             col1.metric(label="トレーニングスコア", value=xgb_reg.score(X_train, y_train))
             col2.metric(label="テストスコア", value=xgb_reg.score(X_test, y_test))
+
 
     # XGBClassifierを選択した場合
    elif ml_menu == "XGBClassifier":
         st.markdown("#### XGBClassifierを実行します")
         execute = st.button("実行")
     
-        xgb_clf = XGBClassifier()  # XGBClassifierのインスタンスを作成
+        xgb_clf = XGBClassifier(max_depth=3, eta=0.1, objective='binary:logistic', eval_metric='logloss', use_label_encoder=False)  # XGBClassifierのインスタンスを作成
     
         # 実行ボタンを押したら下記が進む
         if execute:
             df_ex = df[ex]
             df_ob = df[ob]
+
+            df_ex = pd.get_dummies(df_ex)
             X_train, X_test, y_train, y_test = train_test_split(df_ex, df_ob, test_size=0.3)
             xgb_clf.fit(X_train, y_train)
             # プログレスバー
