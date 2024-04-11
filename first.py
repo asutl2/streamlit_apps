@@ -1,5 +1,4 @@
 # streamlit run first.pyで実行する！
-
 #ライブラリの読み込み
 import time
 import streamlit as st
